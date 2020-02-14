@@ -6,6 +6,7 @@ import uuid
 from datetime import datetime, timedelta, date
 from django.db import models
 from django.utils import timezone
+from md5 import md5
 from model_utils.models import TimeStampedModel
 
 from common import constants
@@ -182,3 +183,28 @@ class SMSValidateCheckFailures(models.Model):
             entry.delete()
         except cls.DoesNotExist:
             return
+
+
+class URLFileUploadCache(TimeStampedModel):
+    raw_url = models.CharField(blank=True, default='', max_length=512)
+    url = models.CharField(blank=True, default='', max_length=255)
+    raw_url_md5 = models.CharField(blank=True, default='', max_length=64, db_index=True)
+
+    @classmethod
+    def new_cache(cls, raw_url, url):
+        raw_url_md5 = md5(raw_url).hexdigest()
+        return cls.objects.create(raw_url=raw_url, url=url, raw_url_md5=raw_url_md5)
+
+    @classmethod
+    def get_cached_objects(cls, raw_url, get_last=True):
+        try:
+            raw_url_md5 = md5(raw_url).hexdigest()
+            query = cls.objects.filter(raw_url_md5=raw_url_md5).order_by('-id')
+            if get_last:
+                query = query[:1]
+            return query
+        except:
+            log.warning('image url match exception, raw_url: %s',raw_url)
+            if get_last:
+                return None
+            return []
