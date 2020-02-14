@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import requests
 import pyqrcode
 
 from .data_structure import ObjectDict
@@ -43,3 +44,15 @@ def get_result_in_query_order(query_set, query_ids, query_key='id'):
         if _id in mapper:
             result.append(mapper[_id])
     return result
+
+
+def spider_request(url):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36'
+    }
+    resp = requests.get(url, timeout=10, headers=headers)
+    if resp.status_code >= 300 or resp.status_code < 200:
+        logging.warning('[spider_request] failed %s', resp.content)
+        return ''
+    else:
+        return resp.content
