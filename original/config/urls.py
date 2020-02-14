@@ -22,6 +22,7 @@ urlpatterns = [
     url('', include('social_django.urls', namespace='social')),
     url('', include('account.urls', namespace='account')),
     url('', include('misc.urls', namespace='misc')),
+    url('', include('extracter.urls', namespace='extracter')),
 ]
 
 if settings.DEBUG:

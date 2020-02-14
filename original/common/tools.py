@@ -3,6 +3,7 @@ import requests
 import pyqrcode
 
 from .data_structure import ObjectDict
+from .upload import upload_handler
 
 
 def qrcode(text):
@@ -56,3 +57,31 @@ def spider_request(url):
         return ''
     else:
         return resp.content
+
+
+def upload_file_from_url(url, upload_file_name=None, suffix=None):
+    result = {
+        'raw_url': url,
+        'url': '',
+    }
+    if suffix is None:
+        if url.endswith('gif'):
+            suffix = 'gif'
+        elif url.endswith('jpg') or url.endswith('jpeg'):
+            suffix = 'jpg'
+        else:
+            suffix = 'png'
+
+    if not upload_file_name:
+        upload_file_name = '{}.{}'.format(uuid.uuid4().hex[:12], suffix)
+    try:
+        resp = requests.get(url, timeout=10)
+    except Exception as ex:
+        logging.error('[upload_file_from_url] failed %s', url, exc_info=1)
+        return result
+    if resp.status_code != 200:
+        return result
+    file_obj = StringIO(resp.content)
+    upload_resp = upload_handler.upload_file(upload_file_name, file_obj)
+    result['url'] = upload_handler.get_download_url(upload_file_name)
+    return result

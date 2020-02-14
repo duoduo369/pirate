@@ -36,6 +36,7 @@ THIRD_PARTY_APPS = (
 PROJECT_APPS = (
     'account',
     'misc',
+    'extracter',
 )
 
 INSTALLED_APPS = []
