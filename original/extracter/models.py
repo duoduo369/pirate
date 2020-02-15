@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from bs4 import BeautifulSoup
-from common import tools
+from common import constants, tools
 from django.db import models
 from jsonfield import JSONField
 from model_utils import Choices
@@ -90,7 +90,7 @@ class WXArticle(TimeStampedModel):
         article = cls.objects.create(
             raw_url=raw_url, title=title, cover=cover, is_active=True, description=description
         )
-        content = CustomerArticleContent.objects.create(article_id=article.id, content=raw_content, body_script=body_script)
+        content = WXArticleContent.objects.create(article_id=article.id, content=raw_content, body_script=body_script)
         article.content = content
         return article
 

@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
+import re
 from enum import Enum, IntEnum, unique
 
 DEFAULT_LIMIT = 20
 VALIDATION_SESSION_KEY = 'verify'
+WEIXIN_IMAGE_RES = [
+    re.compile(r'''https://mmbiz.qpic.cn/mmbiz_[^\? '"]*\?wx_fmt=(?:jpeg|png|gif)'''),
+    re.compile(r'''https://mmbiz.qpic.cn/mmbiz_(?:jpe?g|png|gif)/\w+/\d+''')
+]
+WEIXIN_DESCRIPTION_RE = re.compile(r'<meta name="description" content="[\S]*" />')
 
 
 def get_key_by_value(enum, value):

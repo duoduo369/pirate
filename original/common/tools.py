@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+import uuid
 import requests
 import pyqrcode
+from StringIO import StringIO
 
 from .data_structure import ObjectDict
 from .upload import upload_handler
