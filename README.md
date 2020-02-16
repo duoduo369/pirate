@@ -1,90 +1,52 @@
-original
+Pirate
 ===
-新一代 django 项目开发脚手架。
 
-当你经常面临开发各种中小型项目，且需要支持微信登录、微信小程序逻辑的时候，
-用这个脚手架会节省很多时间。
+一个通过简单API手动抓取微信公众号文章的Extractor。
 
-features
----
-* python-social-auth 提供的oauth支持, 特别对微信相逻辑定制，例如unioinid
-* 微信小程序登录
-* 本站 oauth, access_token 支持
-* 简单的account逻辑
-* restframework
-* supervisor+gunicore+nginx，配置文件
-* cdn 图片上传，目前支持 qiniu、腾讯云
-* 微信公众号jssdk签名
-* sms, 支持云片、腾讯云
-* 图形验证码
-* redis 支持
-* 二维码
-* cms 用户权限
-* django-mako 支持
+通过CDN清洗微信图片。
 
-目录讲解
----
-deploy, 部署有关文件
+用法：假设部署后的域名为 www.myhost.com
 
-original, 主代码目录
-  * config, 配置有关文件
-  * common, 异常，常量，工具方法等
-  * account, 账户
-  * misc, 无法分类
-  * quickdev, 开发时可以随手涂鸦的目录
-  * templates, html 模板目录
-  * static，静态文件目录
+    POST http://www.myhost.com/api/v1/extrack/wx/
 
+    params:
 
-项目路径
----
-* /data/vens  python vens
-* /data/app  所有项目根路径
-* /data/var/supervisor  supervisor 运行文件目录，socket、pid
-* /data/var/log  日志
-* /etc/nginx  nginx 相关配置目录
-* /etc/supervisor  supervisor  相关配置目录
+        * raw_url: 类型string, 微信公众号文章的路由
 
-
-单次部署
+用到的技术
 ---
 
-将fabric文件路径改为自己的配置
+* original - 本项目使用的Django脚手架 (original)[https://github.com/duoduo369/original]
+* virtualenv + pip - 项目依赖管理
+* nginx + supervisor - 项目部署相关
+* cdn - 七牛免费可以有一些额度
+* 域名和ssl证书
 
-    sudo pip install fabric
-    cd /data/app/original
-    ln -s /data/app/original/deploy/fabric/ln_fabfile.py fabfile.py
-    fab deploy
 
-启用某些功能
+部署相关文件
 ---
 
-#### 图片上传
+创建 config/settings/private_production.py
+
+    import os
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'dbname', # 改成你的数据库名字
+            'HOST': os.environ.get('ORIGINAL_MYSQL_HOST', 'localhost'), # 数据库host
+            'USER': os.environ.get('ORIGINAL_MYSQL_USER', 'db_username'), # 改成你的数据库user
+            'PASSWORD': os.environ.get('ORIGINAL_MYSQL_PASSWORD', 'db_password'), # 改成你的数据库password
+            'PORT': os.environ.get('ORIGINAL_MYSQL_PORT', 3306),
+            'OPTIONS': {'charset': 'utf8mb4'},
+        }
+    }
 
     FILE_UPLOAD_BACKEND = 'qiniu'
-    根据七牛配置将下面配置补全  
-    FILE_UPLOAD_KEY = ''
-    FILE_UPLOAD_SECRET = ''
-    FILE_UPLOAD_BUCKET = ''
+    FILE_UPLOAD_KEY = 'i6fdSECQjLfF' # 改成你的qiniu key，现在这里是假的
+    FILE_UPLOAD_SECRET = 'adfiuerqp' # 改成你的qiniu secret
+    FILE_UPLOAD_BUCKET = 'reworkdev' # 改成你的qiniu bucket
     FILE_CALLBACK_POLICY = {}
+    FILE_DOWNLOAD_PREFIX = '' # 改成你的host, 例如 http://cdn.myhost.com/
 
-#### redis
-
-    ENABLE_REDIS = False
-    REDIS_HOST = 'localhost'
-    REDIS_PORT = 6379
-    REDIS_DB = 0
-
-#### 短信验证码
-
-SMS_BACKEND 支持 qcloud(腾讯), yunpian(云片),
-注意个人开发者短信服务商有很多限制，例如模板中的变量所有文字相加不得超过10个字(云片),腾讯(12个字)
-
-    SMS_BACKEND = ''
-    SMS_QCLOUD_KEY = ''
-    SMS_QCLOUD_SECRET = ''
-    SMS_QCLOUD_DEFAULT_TEMPLATE_ID = ''
-
-    SMS_YUNPIAN_KEY = ''
-    SMS_YUNPIAN_SECRET = ''
-    SMS_YUNPIAN_DEFAULT_TEMPLATE_ID = ''
+    FILEUPLOAD_CALLBACK_URL = # 改成你自己host的对应地址, 例如 https://www.myhost.com/api/v1/file/upload/callback/
